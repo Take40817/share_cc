@@ -75,7 +75,7 @@ def buy_signal(data, last_data, flag):
                  symbol = 'BTC/JPY',
                  type = 'limit',
                  side = 'buy',
-                 price = data["close_price"],
+                 price = 2200000,
                  amount = '0.01',
                  params = {"product_code" : "BTC_JPY"}
             )
@@ -102,7 +102,7 @@ def sell_signal(data, last_data, flag):
                  symbol = 'BTC/JPY',
                  type = 'limit',
                  side = 'sell',
-                 price = data["close_price"],
+                 price = 5400000,
                  amount = '0.01',
                  params = {"product_code" : "BTC_JPY"}
             )
