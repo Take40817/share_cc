@@ -60,7 +60,6 @@ while i < 500:
         if flag == 0 and check_candle(data):
             flag = 1
         elif flag == 1 and check_candle(data) and check_acsend(last_data, data):
-            print("2本連続で陽線!")
             flag = 2
         elif flag == 2 and check_candle(data) and check_acsend(last_data, data):
             print("3本連続で陽線なので買い!")
