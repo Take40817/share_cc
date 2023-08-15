@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 import time
 
-response = requests.get("https://api.cryptowat.ch/markets/bitflyer/btcfxjpy/ohlc", params = {"periods" : 60})
+response = requests.get("https://api.cryptowat.ch/markets/bitflyer/btcjpy/ohlc", params = {"periods" : 60})
 
 def get_price(min, i):
 
