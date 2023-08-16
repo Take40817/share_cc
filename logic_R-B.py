@@ -15,9 +15,22 @@ logger.addHandler(handlerSh)
 logger.addHandler(handlerFile)
 
 
+line_token = "ALfhIwVDa4e4gIFQZstHKQVNJ2vHfPyedwkjbzh5rDG"
+
+
 bitflyer = ccxt.bitflyer()
 bitflyer.apiKey = "2fYygqQpc4ruSmMzmdr7LR"
 bitflyer.secret = "IQ6edS8EInDp5K989rNU9nMiGTVp8dI329T/oomu0iQ="
+
+
+def print_log(text):
+
+      logger.info(text)
+
+      url = "https://notify-api.line.me/api/notify"
+      data = {"message" : text}
+      headers = {"Authorization" : "Bearer " + line_token}
+      requests.post(url, data = data, headers = headers)
 
 
 def get_price(min, i):
@@ -89,7 +102,7 @@ def buy_signal(data, last_data, flag):
       elif flag["buy_signal"] == 1 and check_candle(data, "buy") and check_ascend(data, last_data):
             flag["buy_signal"] = 2
       elif flag["buy_signal"] == 2 and check_candle(data, "buy") and check_ascend(data, last_data):
-            logger.info("3本連続で陽線 なので" + str(data["close_price"]) + "で買い指示")
+            print_log("3本連続で陽線 なので" + str(data["close_price"]) + "で買い指示")
             flag["buy_signal"] = 3
 
             try:
@@ -121,7 +134,7 @@ def sell_signal(data, last_data, flag):
       elif flag["sell_signal"] == 1 and check_candle(data, "sell") and check_descend(data, last_data):
             flag["sell_signal"] = 2
       elif flag["sell_signal"] == 2 and check_candle(data, "sell") and check_descend(data, last_data):
-            logger.info("3本連続で陰線 なので" + str(data["close_price"]) + "で売り指示")
+            print_log("3本連続で陰線 なので" + str(data["close_price"]) + "で売り指示")
             flag["sell_signal"] = 3
 
             try:
@@ -150,7 +163,7 @@ def close_position(data, last_data, flag):
       
       if flag["position"]["side"] == "BUY":
             if data["close_price"] < last_data["close_price"]:
-                  logger.info("前回の終値を下回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
+                  print_log("前回の終値を下回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
                   while True:
                         try:
                               order = bitflyer.create_order(
@@ -171,7 +184,7 @@ def close_position(data, last_data, flag):
 
       if flag["position"]["side"] == "SELL":
             if data["close_price"] > last_data["close_price"]:
-                  logger.info("前回の終値を上回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
+                  print_log("前回の終値を上回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
                   while True:
                         try:
                               order = bitflyer.create_order(
@@ -205,7 +218,7 @@ def check_order(flag):
       
       else:
             if position:
-                  logger.info("注文が約定しました！")
+                  print_log("注文が約定しました！")
                   flag["order"]["exist"] = False
                   flag["order"]["count"] = 0
                   flag["position"]["exist"] = True
@@ -233,7 +246,7 @@ def cancel_order(orders, flag):
                         id = o["id"],
                         params = {"product_code" : "BTC_JPY"}
                   )
-                  logger.info("約定していない注文をキャンセルしました")
+                  print_log("約定していない注文をキャンセルしました")
                   flag["order"]["count"] = 0
                   flag["order"]["exist"] = False
 
