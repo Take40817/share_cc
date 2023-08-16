@@ -7,7 +7,7 @@ from logging import getLogger,Formatter,StreamHandler,FileHandler,INFO
 
 logger = getLogger(__name__)
 handlerSh = StreamHandler()
-handlerFile = FileHandler("C:/Users/net07/Desktop/conf_log/R-B_Bot.log") # ログファイルの出力先とファイル名を指定
+handlerFile = FileHandler("C:/Users/net07/Desktop/CC/conf_log/R-B_Bot.log") # ログファイルの出力先とファイル名を指定
 handlerSh.setLevel(INFO)
 handlerFile.setLevel(INFO)
 logger.setLevel(INFO)
@@ -47,7 +47,7 @@ def get_price(min, i):
                         "low_price" : data["result"][str(min)][i][3],
                         "close_price" : data["result"][str(min)][i][4]}
           
-          except requests.exception.RequestsException as e:
+          except requests.exceptions.RequestException as e:
                   logger.info("Cryptowatchの価格取得でエラー発生 : ", e)
                   logger.info("10秒待機してやり直します")
                   time.sleep(10)
