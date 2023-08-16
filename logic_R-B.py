@@ -2,6 +2,17 @@ import requests
 from datetime import datetime
 import time
 import ccxt
+from logging import getLogger,Formatter,StreamHandler,FileHandler,INFO
+
+
+logger = getLogger(__name__)
+handlerSh = StreamHandler()
+handlerFile = FileHandler("C:/Users/net07/Desktop/conf_log/R-B_Bot.log") # ログファイルの出力先とファイル名を指定
+handlerSh.setLevel(INFO)
+handlerFile.setLevel(INFO)
+logger.setLevel(INFO)
+logger.addHandler(handlerSh)
+logger.addHandler(handlerFile)
 
 
 bitflyer = ccxt.bitflyer()
@@ -24,14 +35,14 @@ def get_price(min, i):
                         "close_price" : data["result"][str(min)][i][4]}
           
           except requests.exception.RequestsException as e:
-                  print("Cryptowatchの価格取得でエラー発生 : ", e)
-                  print("10秒待機してやり直します")
+                  logger.info("Cryptowatchの価格取得でエラー発生 : ", e)
+                  logger.info("10秒待機してやり直します")
                   time.sleep(10)
 
 
 def print_price(data):
     
-    print( "時間： " + datetime.fromtimestamp(data["close_time"]).strftime('%Y/%m/%d %H:%M') + " 始値： " + str(data["open_price"]) + " 終値： " + str(data["close_price"]) )
+    logger.info( "時間： " + datetime.fromtimestamp(data["close_time"]).strftime('%Y/%m/%d %H:%M') + " 始値： " + str(data["open_price"]) + " 終値： " + str(data["close_price"]) )
 
 
 def check_candle(data, side):
@@ -78,7 +89,7 @@ def buy_signal(data, last_data, flag):
       elif flag["buy_signal"] == 1 and check_candle(data, "buy") and check_ascend(data, last_data):
             flag["buy_signal"] = 2
       elif flag["buy_signal"] == 2 and check_candle(data, "buy") and check_ascend(data, last_data):
-            print("3本連続で陽線 なので" + str(data["close_price"]) + "で買い指示")
+            logger.info("3本連続で陽線 なので" + str(data["close_price"]) + "で買い指示")
             flag["buy_signal"] = 3
 
             try:
@@ -94,8 +105,8 @@ def buy_signal(data, last_data, flag):
                   flag["order"]["side"] = "BUY"
                   time.sleep(30)
             except ccxt.BaseError as e:
-                  print("BitflyerのAPIでエラー発生", e)
-                  print("注文が失敗しました")
+                  logger.info("BitflyerのAPIでエラー発生", e)
+                  logger.info("注文が失敗しました")
 
       else:
             flag["buy_signal"] = 0
@@ -110,7 +121,7 @@ def sell_signal(data, last_data, flag):
       elif flag["sell_signal"] == 1 and check_candle(data, "sell") and check_descend(data, last_data):
             flag["sell_signal"] = 2
       elif flag["sell_signal"] == 2 and check_candle(data, "sell") and check_descend(data, last_data):
-            print("3本連続で陰線 なので" + str(data["close_price"]) + "で売り指示")
+            logger.info("3本連続で陰線 なので" + str(data["close_price"]) + "で売り指示")
             flag["sell_signal"] = 3
 
             try:
@@ -126,8 +137,8 @@ def sell_signal(data, last_data, flag):
                   flag["order"]["side"] = "SELL"
                   time.sleep(30)
             except ccxt.BaseError as e:
-                  print("BitflyerのAPIでエラー発生", e)
-                  print("注文が失敗しました")
+                  logger.info("BitflyerのAPIでエラー発生", e)
+                  logger.info("注文が失敗しました")
 
       else:
             flag["sell_signal"] = 0
@@ -139,7 +150,7 @@ def close_position(data, last_data, flag):
       
       if flag["position"]["side"] == "BUY":
             if data["close_price"] < last_data["close_price"]:
-                  print("前回の終値を下回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
+                  logger.info("前回の終値を下回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
                   while True:
                         try:
                               order = bitflyer.create_order(
@@ -153,14 +164,14 @@ def close_position(data, last_data, flag):
                               time.sleep(30)
                               break
                         except ccxt.BaseError as e:
-                              print("BitflyerのAPIでエラー発生", e)
-                              print("注文の通信が失敗しました。30秒後に再トライします")
+                              logger.info("BitflyerのAPIでエラー発生", e)
+                              logger.info("注文の通信が失敗しました。30秒後に再トライします")
                               time.sleep(30)
 
 
       if flag["position"]["side"] == "SELL":
             if data["close_price"] > last_data["close_price"]:
-                  print("前回の終値を上回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
+                  logger.info("前回の終値を上回ったので" + str(data["close_price"]) + "あたりで成行で決済します")
                   while True:
                         try:
                               order = bitflyer.create_order(
@@ -174,8 +185,8 @@ def close_position(data, last_data, flag):
                               time.sleep(30)
                               break
                         except ccxt.BaseError as e:
-                              print("BitflyerのAPIでエラー発生", e)
-                              print("注文の通信が失敗しました。30秒後に再トライします")
+                              logger.info("BitflyerのAPIでエラー発生", e)
+                              logger.info("注文の通信が失敗しました。30秒後に再トライします")
                               time.sleep(30)  
 
       return flag  
@@ -190,26 +201,26 @@ def check_order(flag):
                      params = {"product_code" : "BTC_JPY"}
                      )
       except ccxt.BaseError as e:
-            print("BitflyerのAPIで問題発生 : ", e)
+            logger.info("BitflyerのAPIで問題発生 : ", e)
       
       else:
             if position:
-                  print("注文が約定しました！")
+                  logger.info("注文が約定しました！")
                   flag["order"]["exist"] = False
                   flag["order"]["count"] = 0
                   flag["position"]["exist"] = True
                   flag["position"]["side"] = flag["order"]["side"]
             else:
                   if orders:
-                        print("まだ未約定の注文があります")
+                        logger.info("まだ未約定の注文があります")
                         for o in orders:
-                              print(o["id"])
+                              logger.info(o["id"])
                         flag["order"]["count"] += 1
 
                         if flag["order"]["count"] > 6:
                               flag = cancel_order(orders, flag)
                   else:
-                        print("注文が遅延しているようです")
+                        logger.info("注文が遅延しているようです")
       return flag
 
 
@@ -222,20 +233,20 @@ def cancel_order(orders, flag):
                         id = o["id"],
                         params = {"product_code" : "BTC_JPY"}
                   )
-                  print("約定していない注文をキャンセルしました")
+                  logger.info("約定していない注文をキャンセルしました")
                   flag["order"]["count"] = 0
                   flag["order"]["exist"] = False
 
                   time.sleep(20)
                   position = bitflyer.private_get_getpositions(params = {"product_code" : "BTC_JPY"})
                   if not position:
-                        print("現在、未決済の建玉はありません")
+                        logger.info("現在、未決済の建玉はありません")
                   else:
-                        print("現在、まだ未決済の建玉があります")
+                        logger.info("現在、まだ未決済の建玉があります")
                         flag["position"]["exist"] = True
                         flag["position"]["side"] = position[0]["side"]
       except ccxt.BaseError as e:
-            print("BitflyerのAPIで問題発生 : ", e)
+            logger.info("BitflyerのAPIで問題発生 : ", e)
       finally:
             return flag
 
