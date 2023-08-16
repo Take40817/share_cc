@@ -25,35 +25,38 @@ bitflyer.secret = "IQ6edS8EInDp5K989rNU9nMiGTVp8dI329T/oomu0iQ="
 
 def print_log(text):
 
-      logger.info(text)
+    logger.info(text)
 
-      url = "https://notify-api.line.me/api/notify"
-      data = {"message" : text}
-      headers = {"Authorization" : "Bearer " + line_token}
-      requests.post(url, data = data, headers = headers)
-
-
+    url = "https://notify-api.line.me/api/notify"
+    data = {"message" : text}
+    headers = {"Authorization" : "Bearer " + line_token}
+    requests.post(url, data = data, headers = headers)
 
 
+def get_price(i):
+        
+        while True:
+            try:
+                params = {"fsym":"BTC","tsym":"JPY","e":"bitflyer","limit":2000 }
+	
+                response = requests.get("https://min-api.cryptocompare.com/data/histominute",params, timeout = 10)
+                data_prv = response.json()
 
-def get_price(min, i):
-    
-    while True:
-          try:
-                  response = requests.get("https://api.cryptowat.ch/markets/bitflyer/btcjpy/ohlc", params = { "periods" : 60 }, timeout = 5)
-                  response.raise_for_status()
-                  data = response.json()
+                if data_prv["Response"] == "Success":
+                    data = data_prv["Data"]
 
-                  return {"close_time" : data["result"][str(min)][i][0],
-                        "open_price" : data["result"][str(min)][i][1],
-                        "high_price" : data["result"][str(min)][i][2],
-                        "low_price" : data["result"][str(min)][i][3],
-                        "close_price" : data["result"][str(min)][i][4]}
-          
-          except requests.exceptions.RequestException as e:
-                  logger.info("CryptoCompareの価格取得でエラー発生 : ", e)
-                  logger.info("10秒待機してやり直します")
-                  time.sleep(10)
+                    return {"close_time" : data[i]["time"],
+                            "open_price" : data[i]["open"],
+                            "high_price" : data[i]["high"],
+                            "low_price" : data[i]["low"],
+                            "close_price" : data[i]["close"]}
+                else:
+                    logger.info("データが存在しません")
+                
+            except requests.exceptions.RequestException as e:
+                logger.info("CryptoCompareの価格取得でエラー発生 : ", e)
+                logger.info("10秒待機してやり直します")
+                time.sleep(10)
 
 
 def print_price(data):
@@ -267,7 +270,7 @@ def cancel_order(orders, flag):
             return flag
 
 
-last_data = get_price(60, -2)
+last_data = get_price(-2)
 print_price(last_data)
 time.sleep(10)
 
@@ -290,7 +293,7 @@ while True:
       if flag["order"]["exist"]:
             flag = check_order(flag)
 
-      data = get_price(60, -2)
+      data = get_price(-2)
       if data["close_time"] != last_data["close_time"]:
             print_price(data)
             if flag["position"]["exist"]:
@@ -303,4 +306,4 @@ while True:
             last_data["open_price"] = data["open_price"]
             last_data["close_price"] = data["close_price"]
 
-      time.sleep(10)        
+      time.sleep(10)
