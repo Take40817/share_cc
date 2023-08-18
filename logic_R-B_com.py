@@ -300,7 +300,7 @@ while True:
                   flag = close_position(data, last_data, flag)
             else:
                   flag = buy_signal(data, last_data, flag)
-                  flag = buy_signal(data, last_data, flag)
+                  flag = sell_signal(data, last_data, flag)
 
             last_data["close_time"] = data["close_time"]
             last_data["open_price"] = data["open_price"]

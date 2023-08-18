@@ -59,10 +59,8 @@ class RealtimeAPI(object):
                     # データ出力時刻, 対象ローソク足時刻, Open, High, Low, Close を出力
                     logger.info("{}, {}, 始値: {}, 高値: {}, 低値: {}, 終値: {}"
                                 .format(datetime.now(), self.ohlc["date"], self.ohlc["open"], self.ohlc["high"], self.ohlc["low"], self.ohlc["close"]))
-                    # CSVファイルにOHLCデータを書き込み
+                    # CSVファイルに最新のOHLCデータを書き込み
                     self.csv_file.close()  # ファイルを閉じて内容を空にする
-                    #self.csv_file = open("ohlc_data.csv", "w", newline="")  # ファイルを新規に作成
-                    #self.csv_file.close()  # ファイルを閉じる
                     self.csv_file = open("ohlc_data.csv", "w", newline="")  # 書き込みモードでファイルを開く
                     self.csv_writer = csv.writer(self.csv_file)
                     self.csv_writer.writerow([
