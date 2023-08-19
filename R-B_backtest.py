@@ -157,10 +157,10 @@ nt = 0
 
 # 500回のループ処理
 i = 1
-while i < 500:
+while i < 1000:
     if flag["order"]["exist"]:
         flag = check_order(flag)
-        NoO += 1
+        nt += 1
 
     data = get_price(60, i)
     print_price(data)
