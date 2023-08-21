@@ -45,17 +45,17 @@ def check_candle(data, side):
 def check_ascend(data, last_data):
 
     if data["open_price"] > last_data["open_price"] and data["close_price"] > last_data["close_price"]:
-        return True
+            return True
     else:
-        return False
+            return False
     
 
 def check_descend(data, last_data):
 
     if data["open_price"] < last_data["open_price"] and data["close_price"] < last_data["close_price"]:
-        return True
+            return True
     else:
-        return False
+            return False
     
 
 def buy_signal(data, last_data, flag):
@@ -117,7 +117,7 @@ def close_position(data, last_data, flag):
             # 成行注文のコードを入れる
             flag["position"]["exist"] = False
 
-    return flag  
+    return flag
 
 
 def check_order(flag):
