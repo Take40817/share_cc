@@ -323,7 +323,7 @@ flag = {
                 "sell-position" : [],
 
                 "slippage" : [],
-                "log" : [],
+                "log" : []
         }
 }
 
