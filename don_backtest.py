@@ -2,6 +2,8 @@ import requests
 from datetime import datetime
 import time
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
 
 #-----設定項目
@@ -153,6 +155,9 @@ def close_position(data, last_data, flag):
 # 各トレードのパフォーマンスを記録する関数
 def records(flag, data):
         
+        # 手仕舞った日時の記録
+        flag["records"]["date"].append(data["close_time_dt"])
+
         # 取引手数料等の計算
         entry_price = flag["position"]["price"]
         exit_price = round(data["close_price"] * lot)
@@ -166,12 +171,18 @@ def records(flag, data):
         buy_profit = exit_price - entry_price - trade_cost
         sell_profit = entry_price - exit_price - trade_cost
 
+        # ドローダウンの計算
+        drawdown = max(flag["records"]["gross-profit"]) - flag["records"]["gross-profit"][-1]
+        if drawdown > flag["records"]["drawdown"]:
+                flag["records"]["drawdown"] = drawdown
+
         # 利益が出てるかの計算
         if flag["position"]["side"] == "BUY":
                 flag["records"]["buy-count"] += 1
                 flag["records"]["buy-profit"].append(buy_profit)
                 flag["records"]["buy-return"].append(round(buy_profit / entry_price * 100, 4))
                 flag["records"]["buy-holding-periods"].append(flag["position"]["count"])
+                flag["records"]["gross-profit"].append(flag["records"]["gross-profit"][-1] + buy_profit)
                 if buy_profit > 0:
                         flag["records"]["buy-winning"] += 1
                         log = str(buy_profit) + "円の利益です\n"
@@ -185,6 +196,7 @@ def records(flag, data):
                 flag["records"]["sell-profit"].append(sell_profit)
                 flag["records"]["sell-return"].append(round(sell_profit / entry_price * 100, 4))
                 flag["records"]["sell-holding-periods"].append(flag["position"]["count"])
+                flag["records"]["gross-profit"].append(flag["records"]["gross-profit"][-1] + sell_profit)
                 if sell_profit > 0:
                         flag["records"]["sell-winning"] += 1
                         log = str(sell_profit) + "円の利益です\n"
@@ -209,8 +221,8 @@ def backtest(flag):
         print("買いエントリの成績")
         print("--------------------------")
         print("トレード回数  :  {}回".format(flag["records"]["buy-count"]))
-        print("勝率         :  {}%".format(round(flag["records"]["buy-winning"] / flag["records"]["buy-count"] * 100, 1)))
-        print("平均リターン  :  {}%".format(round(np.average(flag["records"]["buy-return"]), 4)))
+        print("勝率         :  {}％".format(round(flag["records"]["buy-winning"] / flag["records"]["buy-count"] * 100, 1)))
+        print("平均リターン  :  {}％".format(round(np.average(flag["records"]["buy-return"]), 4)))
         print("総損益       :  {}円".format(buy_gross_profit))
         print("平均保有期間  :  {}足分".format(round(buy_HP_av, 2)))
 
@@ -218,14 +230,15 @@ def backtest(flag):
         print("売りエントリの成績")
         print("--------------------------")
         print("トレード回数  :  {}回".format(flag["records"]["sell-count"]))
-        print("勝率         :  {}%".format(round(flag["records"]["sell-winning"] / flag["records"]["sell-count"] * 100, 1)))
-        print("平均リターン  :  {}%".format(round(np.average(flag["records"]["sell-return"]), 4)))
+        print("勝率         :  {}％".format(round(flag["records"]["sell-winning"] / flag["records"]["sell-count"] * 100, 1)))
+        print("平均リターン  :  {}％".format(round(np.average(flag["records"]["sell-return"]), 4)))
         print("総損益       :  {}円".format(sell_gross_profit))
         print("平均保有期間  :  {}足分".format(round(sell_HP_av, 2)))
 
         print("--------------------------")
         print("総合の成績")
         print("--------------------------")
+        print("最大ドローダウン :  {0}円 / {1}％".format(-1 * flag["records"]["drawdown"], round(-1 * flag["records"]["drawdown"] / max(flag["records"]["gross-profit"]) * 100, 1)))
         print("総損益       :  {}円".format(buy_gross_profit + sell_gross_profit))
         print("手数料合計    :  {}円".format(np.sum(flag["records"]["slippage"])))
 
@@ -238,7 +251,7 @@ def backtest(flag):
 # ここからメイン処理
 # ------------------------------
 
-price = get_price(chart_sec, after=1483228800)
+price = get_price(chart_sec, before = 1688137200, after=1483228800)
 
 flag = {
         "order" : {
@@ -265,7 +278,10 @@ flag = {
                 "sell-return" : [],
                 "sell-profit" : [],
                 "sell-holding-periods" : [],
-
+                
+                "drawdown" : 0,
+                "date" : [],
+                "gross-profit" : [0],
                 "slippage" : [],
                 "log" : []
         }
@@ -308,3 +324,13 @@ print(str(len(price)) + "件のローソク足データで検証")
 print("--------------------------")
 
 backtest(flag)
+
+del flag["records"]["gross-profit"][0] # X軸/Y軸のデータ数を揃えるため、先頭の0を削除
+date_list = pd.to_datetime(flag["records"]["date"]) # 日付型に変換
+
+plt.plot(date_list, flag["records"]["gross-profit"])
+plt.xlabel("Date")
+plt.ylabel("Balance")
+plt.xticks(rotation = 50)
+
+plt.show()

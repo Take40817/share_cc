@@ -2,6 +2,8 @@ import requests
 from datetime import datetime
 import time
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
 
 #-----設定項目
@@ -114,6 +116,9 @@ def close_position(data, last_data, flag):
 
 # 各トレードのパフォーマンスを記録する関数
 def records(flag, data):
+
+        # 手仕舞った日時の記録
+        flag["records"]["date"].append(data["close_time_dt"])
         
         # 取引手数料等の計算
         entry_price = flag["position"]["price"]
@@ -133,6 +138,7 @@ def records(flag, data):
                 flag["records"]["sell-profit"].append(sell_profit)
                 flag["records"]["sell-return"].append(round(sell_profit / entry_price * 100, 4))
                 flag["records"]["sell-holding-periods"].append(flag["position"]["count"])
+                flag["records"]["gross-profit"].append(flag["records"]["gross-profit"][-1] + sell_profit)
                 if sell_profit > 0:
                         flag["records"]["sell-winning"] += 1
                         log = str(sell_profit) + "円の利益です\n"
@@ -175,7 +181,7 @@ def backtest(flag):
 # ここからメイン処理
 # ------------------------------
 
-price = get_price(chart_sec)
+price = get_price(chart_sec, after=1483228800)
 
 flag = {
         "order" : {
@@ -197,6 +203,8 @@ flag = {
                 "sell-profit" : [],
                 "sell-holding-periods" : [],
 
+                "date" : [],
+                "gross-profit" : [0],
                 "slippage" : [],
                 "log" : []
         }
@@ -241,3 +249,13 @@ print("過去" + str(term) + "期間の最高値を更新したらエントリ�
 print("--------------------------")
 
 backtest(flag)
+
+del flag["records"]["gross-profit"][0] # X軸/Y軸のデータ数を揃えるため、先頭の0を削除
+date_list = pd.to_datetime(flag["records"]["date"]) # 日付型に変換
+
+plt.plot(date_list, flag["records"]["gross-profit"])
+plt.xlabel("Date")
+plt.ylabel("Balance")
+plt.xticks(rotation = 50)
+
+plt.show()
