@@ -49,7 +49,7 @@ def delete_data(price):
 
         for index, value in enumerate(price):
                 time = int(datetime.fromtimestamp(value["close_time"]).strftime('%M'))
-                if time %MIN == 0:
+                if time % MIN == 0:
                         index_time.append(index)
 
         for i in price[:index_time[-1] + 1]:
