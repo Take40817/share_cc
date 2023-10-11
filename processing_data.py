@@ -11,12 +11,12 @@ def proccessing_datetime(new_price):
                 
                 for ind, val in enumerate(new_price):
                         dt_min = int(datetime.fromtimestamp(val["close_time"]).strftime('%M'))
-                        if dt_min %MIN == 1:
+                        if dt_min % MIN == 1:
                                 break
 
                 for i in new_price[ind:]:
                         dt_min = int(datetime.fromtimestamp(i["close_time"]).strftime('%M'))
-                        if dt_min %MIN == 1:
+                        if dt_min % MIN == 1:
                                 ohlc.append({
                                         "close_time" : i["close_time"],
                                         "close_time_dt" : i["close_time_dt"],
