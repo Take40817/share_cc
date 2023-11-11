@@ -19,8 +19,8 @@ line_token = "ALfhIwVDa4e4gIFQZstHKQVNJ2vHfPyedwkjbzh5rDG"
 
 
 bitflyer = ccxt.bitflyer()
-bitflyer.apiKey = "2fYygqQpc4ruSmMzmdr7LR"
-bitflyer.secret = "IQ6edS8EInDp5K989rNU9nMiGTVp8dI329T/oomu0iQ="
+bitflyer.apiKey = ""
+bitflyer.secret = ""
 
 
 def print_log(text):
